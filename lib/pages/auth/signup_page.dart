@@ -1,8 +1,12 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:hostapp/constants/app_constants.dart';
 import 'package:hostapp/pages/widgets/custom_text_field.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -23,11 +27,44 @@ class _SignupPageState extends State<SignupPage> {
   File? _imageFile;
   bool _isLoading = false;
 
+  void _chooseImage() async {
+    
+    final XFile? pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      //Convert XFile to File
+      File imageFile = File(pickedImage.path);
+
+      //Temporary directory to save compressed image
+      final tempDir = await getTemporaryDirectory();
+      final targetPath = path.join(tempDir.path, 'compressed_${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+      //Compress the image
+      final compressedBytes = await FlutterImageCompress.compressWithFile(
+        imageFile.absolute.path,
+        minWidth: 800,
+        minHeight: 800,
+        quality: 25,
+        rotate: 0,
+        format: CompressFormat.jpeg,
+      );
+      if (compressedBytes != null) {
+        //Save the compressed image to the target path
+        final compressedImageFile = await File(targetPath).writeAsBytes(compressedBytes);
+        setState(() {
+          _imageFile = compressedImageFile;
+        });
+        print('Original size: ${imageFile.lengthSync()} bytes');
+        print('Compressed size: ${compressedImageFile.lengthSync()} bytes');
+      }
+  }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text("Create Account"),
       ),
       body: SingleChildScrollView(
@@ -50,14 +87,13 @@ class _SignupPageState extends State<SignupPage> {
                   CustomTextField(controller: _firstNameController, label: 'First Name', icon: Icons.person, isPassword: false,),
                   CustomTextField(controller: _lastNameController, label: 'Last Name', icon: Icons.person, isPassword: false,),
                   CustomTextField(controller: _cityController, label: 'City', icon: Icons.location_on, isPassword: false,),
-                  CustomTextField(controller: _countryController, label: 'Country', icon: Icons.location_on, isPassword: false,)
-                  ,
+                  CustomTextField(controller: _countryController, label: 'Country', icon: Icons.location_on, isPassword: false,),
                   CustomTextField(controller: _bioController, label: 'Tell Us a Little About you', icon: Icons.info, isPassword: false, maxLines: 3,),
                   
                 ],
               ),),
               SizedBox(height: 25,),
-              MaterialButton(onPressed: (){},
+              MaterialButton(onPressed: _chooseImage,
               child: (_imageFile == null) ? 
               const Icon(Icons.add_a_photo, size: 40, color: Colors.white,): 
               CircleAvatar(
