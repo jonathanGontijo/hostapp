@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hostapp/pages/auth/signup_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Hostel Management System",
       theme: ThemeData(
         fontFamily: 'Couture',
@@ -64,18 +66,7 @@ class MyApp extends StatelessWidget {
               hintStyle: TextStyle(color: Colors.white54),
 
       ),),
-      home: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Center(
-            
-            child: Text(
-              "Welcome to Hostel Management System",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-                ),
-        ) ),
+      home: SignupPage(),
     );
   }
 }
