@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hostapp/pages/auth/login_page.dart';
 import 'package:hostapp/pages/auth/signup_page.dart';
+import 'package:hostapp/pages/guest/guest_home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,6 +72,7 @@ class MyApp extends StatelessWidget {
       routes: {
         LoginPage.routeName: (context) => const LoginPage(),
         SignupPage.routeName: (context) => const SignupPage(),
+        GuestHomePage.routeName: (context) => const GuestHomePage(),
       },
     );
   }
