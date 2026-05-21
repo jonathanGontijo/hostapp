@@ -1,6 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hostapp/common/common_functions.dart';
 import 'package:hostapp/constants/app_constants.dart';
+import 'package:hostapp/models/user_objects.dart';
 import 'package:hostapp/pages/auth/signup_page.dart';
+import 'package:hostapp/pages/guest/guest_home_page.dart';
 import 'package:hostapp/pages/widgets/custom_text_field.dart';
 
 class LoginPage extends StatefulWidget {
@@ -22,8 +26,56 @@ class _LoginPageState extends State<LoginPage> {
     Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupPage()));
   }
 
-  _logIn(){
+  _logIn() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
 
+      String email = _emailController.text.trim();
+      String password = _passwordController.text.trim();
+
+      try {
+        UserCredential firebaseUser = await FirebaseAuth.instance.signInWithEmailAndPassword(
+            email: email,
+            password: password
+        );
+
+        if (firebaseUser.user != null) {
+          final userID = firebaseUser.user!.uid;
+          AppConstants.currentUser = UserModel(id: userID);
+
+          await AppConstants.currentUser.getPersonalInfoFromFirestore();
+
+          CommonFunctions.showSnackbar(context, "Your are Logged-in successfully.");
+
+          _formKey.currentState!.reset();
+          Navigator.pushReplacementNamed(context, GuestHomePage.routeName);
+        }
+      } on FirebaseAuthException catch(e) {
+        String errorMessage;
+        switch (e.code) {
+          case "email-already-in-use":
+            errorMessage = "This email is already registered.";
+            break;
+          case "invalid-email":
+            errorMessage = "Please enter a valid email address.";
+            break;
+          case "weak-password":
+            errorMessage = "Password is too weak. Please use a stronger one. Use at-least 6 characters";
+            break;
+          default:
+            errorMessage = "Sign up failed. Please try again later.";
+        }
+        CommonFunctions.showSnackbar(context, errorMessage);
+      } catch (e) {
+        CommonFunctions.showSnackbar(context, e.toString());
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
 

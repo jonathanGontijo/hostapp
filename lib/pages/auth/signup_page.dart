@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hostapp/common/common_functions.dart';
 import 'package:hostapp/constants/app_constants.dart';
+import 'package:hostapp/pages/auth/login_page.dart';
 import 'package:hostapp/pages/widgets/custom_text_field.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -61,7 +64,76 @@ class _SignupPageState extends State<SignupPage> {
   }
   }
 
+  _createAccount() async {
 
+    if (!_formKey.currentState!.validate() || _imageFile == null) {
+      CommonFunctions.showSnackbar(context, "Please fill all fields and select a profile picture");
+      return;
+    }
+
+      setState(() {
+        _isLoading = true;
+      });
+
+    final email =  _emailController.text.trim();
+    final password =  _passwordController.text.trim();
+
+      try {
+        UserCredential firebaseUser = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+        if (firebaseUser.user != null) {
+          final userID = firebaseUser.user!.uid;
+          AppConstants.currentUser.id = userID;
+          AppConstants.currentUser.firstName = _firstNameController.text.trim();
+          AppConstants.currentUser.lastName = _lastNameController.text.trim();
+          AppConstants.currentUser.city = _cityController.text.trim();
+          AppConstants.currentUser.country = _countryController.text.trim();
+          AppConstants.currentUser.bio = _bioController.text.trim();
+          AppConstants.currentUser.email = email;
+          AppConstants.currentUser.password = password;
+
+          await AppConstants.currentUser.addUserToFirestore();
+          await AppConstants.currentUser.addImageToFirestore(_imageFile!);
+
+          FirebaseAuth.instance.signOut();
+          CommonFunctions.showSnackbar(
+              context, "Your account created successfully. Please Login now.");
+
+          _formKey.currentState!.reset();
+          Navigator.pushReplacementNamed(context, LoginPage.routeName);
+        }
+      }on FirebaseAuthException  catch(e){
+        String errorMessage;
+        switch (e.code) {
+          case 'email-already-in-use':
+            errorMessage = 'The email address is already in use by another account.';
+            break;
+          case 'invalid-email':
+            errorMessage = 'The email address is not valid.';
+            break;
+          case 'operation-not-allowed':
+            errorMessage = 'Email/password accounts are not enabled.';
+            break;
+          case 'weak-password':
+            errorMessage = 'The password is too weak.';
+            break;
+          default:
+            errorMessage = 'An undefined Error happened.';
+        }
+        CommonFunctions.showSnackbar(context, errorMessage);
+      } catch(e){
+        CommonFunctions.showSnackbar(context, e.toString());
+      }
+      finally{
+        setState(() {
+          _isLoading = false;
+        });
+      }
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,9 +176,11 @@ class _SignupPageState extends State<SignupPage> {
 
               ),),
                 SizedBox(height: 25,),
-                _isLoading ? const CircularProgressIndicator() : MaterialButton(onPressed: (){},
-                color: Colors.white,
-                height: 55,
+                _isLoading ? const CircularProgressIndicator() : MaterialButton(onPressed: _createAccount, 
+                 color: Colors.white,
+                 textColor: Colors.black,
+                 height: 55,
+                
                 minWidth: double.infinity,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                  child: const Text("Sign Up", style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),),
