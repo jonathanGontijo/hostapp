@@ -9,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 
 
 class SignupPage extends StatefulWidget {
+static const String routeName = "/signup";
+  
   const SignupPage({super.key});
 
   @override
@@ -111,6 +113,7 @@ class _SignupPageState extends State<SignupPage> {
                 SizedBox(height: 15,),
           ],
         ),
-      ));
-     }
+      ),
+    );
+  }
 }
