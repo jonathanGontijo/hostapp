@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hostapp/host/host_home_page.dart';
 import 'package:hostapp/pages/auth/login_page.dart';
 import 'package:hostapp/pages/auth/signup_page.dart';
 import 'package:hostapp/pages/guest/guest_home_page.dart';
@@ -73,6 +74,7 @@ class MyApp extends StatelessWidget {
         LoginPage.routeName: (context) => const LoginPage(),
         SignupPage.routeName: (context) => const SignupPage(),
         GuestHomePage.routeName: (context) => const GuestHomePage(),
+        HostHomePage.routeName: (context) => const HostHomePage(),
       },
     );
   }

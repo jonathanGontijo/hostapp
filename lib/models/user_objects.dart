@@ -86,4 +86,15 @@ class UserModel extends Contact {
 
     return displayImage!;
   }
+
+  becomeHost() async {
+    isHost = true;
+    Map<String, dynamic> data = {
+      'isHost': true,
+    };
+    await FirebaseFirestore.instance.doc('users/$id').update(data);
+    changeCurrentlyHosting(bool isHosting){
+      isCurrentlyHosting = isHosting;
+    }
+  }
 }
